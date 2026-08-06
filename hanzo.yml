@@ -1,0 +1,37 @@
+# Canonical CI/CD config for hanzoai/zen-dub — read by the hanzoai/ci reusable
+# workflow (.hanzo/workflows/cicd.yml) and by platform.hanzo.ai.
+#
+# No image and no deploy: this is a GPU inference tree (torch + mmpose + mmcv +
+# a face-detection stack, driven by app.py / inference.sh) whose weights are
+# fetched by download_weights.sh, not vendored. It runs where the GPUs are.
+#
+# So the gate is scoped to what is TRUE without a GPU, and it says so rather
+# than pretending otherwise. Installing requirements.txt on a CPU runner buys a
+# multi-gigabyte torch download and still cannot execute a single frame, so the
+# gate does not do it. What it does do is catch the two defects that ship in a
+# Python tree with no import-time coverage:
+#
+#   compileall  — every module parses. A syntax error in a file only the
+#                 inference path imports otherwise surfaces on the GPU box,
+#                 an hour into a job.
+#   ruff E9,F821,F822,F823 — undefined names. Deliberately ONLY these: no
+#                 style, no unused imports, nothing arguable. Every one of
+#                 these is a NameError that WILL be raised the moment that
+#                 line runs. That is not a lint opinion, it is a latent crash.
+#
+# It found one on its first run: scripts/preprocess.py used `args.ffmpeg_path`
+# at module scope, where `args` does not exist — so the ffmpeg-not-on-PATH
+# branch, the code whose whole job is to recover, crashed instead. Fixed in the
+# same commit that added this file.
+#
+# What this gate does NOT claim: nothing here proves the model runs, or that
+# the weights load, or that a frame renders. That is a GPU lane and belongs on
+# a GPU runner. Better to state the boundary than to let a green tick imply it.
+test:
+  - name: parse-and-undefined-names
+    run: |
+      set -euo pipefail
+      python3 -m compileall -q .
+      command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
+      export PATH="$HOME/.local/bin:$PATH"
+      uvx ruff check --select=E9,F821,F822,F823 .
