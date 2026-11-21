@@ -1,5 +1,7 @@
 # Zen-Dub
 
+[![Open in Hanzo](https://hanzo.app/badges/open-in-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/zen-dub&ref=main&action=open) [![Edit with Hanzo](https://hanzo.app/badges/edit-with-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/zen-dub&ref=main&action=edit) [![Deploy with Hanzo](https://hanzo.app/badges/deploy-with-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/zen-dub&ref=main&action=deploy)
+
 <strong>Zen-Dub: Real-Time High-Fidelity Video Dubbing via Spatio-Temporal Sampling</strong>
 
 Yue Zhang<sup>\*</sup>,
